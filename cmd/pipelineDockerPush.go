@@ -16,39 +16,41 @@
 package cmd
 
 import (
-	"os"
+	"github.com/sirupsen/logrus"
+	"github.com/sotomskir/gitlab-cli/pipelineApi"
 
 	"github.com/spf13/cobra"
 )
 
-// completionCmd represents the completion command
-var completionCmd = &cobra.Command{
-	Use:   "completion",
-	Short: "Generates bash completion script",
-	Long: `To load completion run
-
-. <(gitlab-cli completion)
-
-To configure your bash shell to load completions for each session add to your bashrc
-
-# ~/.bashrc or ~/.profile
-. <(gitlab-cli completion)
-`,
+// pipelineDockerPushCmd represents the pipelineDockerPush command
+var pipelineDockerPushCmd = &cobra.Command{
+	Use:   "push TAG",
+	Aliases: []string{"p"},
+	Short: "Push docker images to registry",
+	Long: `Push docker images to registry. 
+If build context is not one of: master, tags, ^.*-stable$ push will be skipped.
+If build is from git tag it will also push image with "stable" tag.
+If build is from master branch it will also push image with "latest" tag`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		rootCmd.GenBashCompletion(os.Stdout)
+		tag, err := cmd.Flags().GetString("tag")
+		if err != nil {
+			logrus.Fatalln(err)
+		}
+		pipelineApi.DockerPush(tag)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(completionCmd)
+	pipelineDockerCmd.AddCommand(pipelineDockerPushCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// completionCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// pipelineDockerPushCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// completionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	pipelineDockerPushCmd.Flags().StringP("tag", "t", "", "Name and optionally a tag in the 'name:tag' format")
 }

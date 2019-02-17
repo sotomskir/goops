@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/sotomskir/gitlab-cli/gitlabApi"
 	"github.com/sotomskir/gitlab-cli/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -25,16 +26,15 @@ import (
 // issueCmd represents the issue command
 var issueCmd = &cobra.Command{
 	Use:   "issues",
-	Short: "List issue keys mentioned in merge request title and description",
+	Short: "List Jira issue keys mentioned in merge request title, description and commit messages",
 	Aliases: []string{"i"},
 	Run: func(cmd *cobra.Command, args []string) {
-		utils.ViperValidate("merge_request_iid", "mr", "CI_MERGE_REQUEST_IID")
-		utils.ViperValidate("project_id", "project", "CI_PROJECT_ID")
-		//issueKeys := gitlabApi.GetMergeRequestIssueKeys(viper.GetString("project_id"), viper.GetString("merge_request_iid"))
-		//for _, v := range issueKeys {
-		//	fmt.Println(v)
-		//}
-		fmt.Printf("%s\n", viper.GetString("project_id"))
+		utils.ViperValidate("ci_merge_request_iid", "mr", "CI_MERGE_REQUEST_IID")
+		utils.ViperValidate("ci_project_id", "project", "CI_PROJECT_ID")
+		issueKeys := gitlabApi.GetMergeRequestIssueKeys(viper.GetString("ci_project_id"), viper.GetString("ci_merge_request_iid"))
+		for _, v := range issueKeys {
+			fmt.Println(v)
+		}
 	},
 }
 
@@ -53,6 +53,6 @@ func init() {
 	issueCmd.Flags().StringP( "project", "p", "", "Project id")
 	issueCmd.Flags().StringP( "mr", "m", "", "Merge request iid")
 
-	viper.BindPFlag("project_id", issueCmd.Flags().Lookup("project"))
-	viper.BindPFlag("merge_request_iid", issueCmd.Flags().Lookup("mr"))
+	viper.BindPFlag("ci_project_id", issueCmd.Flags().Lookup("project"))
+	viper.BindPFlag("ci_merge_request_iid", issueCmd.Flags().Lookup("mr"))
 }

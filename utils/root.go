@@ -1,14 +1,27 @@
 package utils
 
 import (
-	"github.com/sotomskir/gitlab-cli/logger"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"os"
+	"strings"
 )
 
 func ViperValidate(name string, flagName string, envVarName string) {
 	if viper.GetString(name) == "" {
-		logger.ErrorF("Error: empty %s. Please use --%s flag or %s env variable\n", name, flagName, envVarName)
-		os.Exit(1)
+		logrus.Fatalf("Error: empty %s. Please use --%s flag or %s env variable\n", name, flagName, envVarName)
+	}
+}
+
+func ViperValidateEnv(envVarName... string) {
+	errors := make([]string, 0)
+	for _, v := range envVarName {
+		value := viper.GetString(v)
+		logrus.Tracef("ViperValidateEnv %s=%s\n", v, value)
+		if value == "" {
+			errors = append(errors, v)
+		}
+	}
+	if len(errors) > 0 {
+		logrus.Fatalf("required variables not set: %s", strings.Join(errors, ", "))
 	}
 }

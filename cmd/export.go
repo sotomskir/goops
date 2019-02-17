@@ -16,39 +16,34 @@
 package cmd
 
 import (
-	"os"
-
+	"fmt"
 	"github.com/spf13/cobra"
+	"os"
 )
 
-// completionCmd represents the completion command
-var completionCmd = &cobra.Command{
-	Use:   "completion",
-	Short: "Generates bash completion script",
-	Long: `To load completion run
-
-. <(gitlab-cli completion)
-
-To configure your bash shell to load completions for each session add to your bashrc
-
-# ~/.bashrc or ~/.profile
-. <(gitlab-cli completion)
-`,
+// exportCmd represents the export command
+var exportCmd = &cobra.Command{
+	Use:   "export VAR [VAR...]",
+	Aliases: []string{"e"},
+	Short: "Generate environment variables export",
+	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		rootCmd.GenBashCompletion(os.Stdout)
+		for _, v := range args {
+			fmt.Printf("export %s=\"%s\"\n", v, os.Getenv(v))
+		}
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(completionCmd)
+	rootCmd.AddCommand(exportCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// completionCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// exportCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// completionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// exportCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

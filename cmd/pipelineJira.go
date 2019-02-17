@@ -13,15 +13,29 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-package main
+package cmd
 
 import (
-	"github.com/sirupsen/logrus"
-	"github.com/sotomskir/gitlab-cli/cmd"
+	"github.com/spf13/cobra"
 )
 
-var log = logrus.New()
+// pipelineJiraCmd represents the pipelineJira command
+var pipelineJiraCmd = &cobra.Command{
+	Use:   "jira",
+	Short: "Atlassian's Jira integration",
+	Aliases: []string{"j"},
+}
 
-func main() {
-	cmd.Execute()
+func init() {
+	pipelineCmd.AddCommand(pipelineJiraCmd)
+
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// pipelineJiraCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// pipelineJiraCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

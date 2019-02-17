@@ -17,11 +17,10 @@ package gitlabApi
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/sotomskir/gitlab-cli/logger"
+	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/gitlab-cli/utils"
 	"github.com/spf13/viper"
 	"gopkg.in/resty.v1"
-	"os"
 	"regexp"
 	"time"
 )
@@ -42,9 +41,7 @@ type Project struct {
 }
 
 func Initialize() {
-	utils.ViperValidate("build_token", "token", "CI_BUILD_TOKEN")
-	utils.ViperValidate("api_v4_url", "server", "CI_API_V4_URL")
-	resty.SetHostURL(viper.GetString("api_v4_url"))
+	resty.SetHostURL(viper.GetString("ci_api_v4_url"))
 	resty.SetTimeout(1 * time.Minute)
 
 	// Headers for all request
@@ -52,69 +49,69 @@ func Initialize() {
 	resty.SetHeaders(map[string]string{
 		"Content-Type":  "application/json",
 		"User-Agent":    "gitlab-cli",
-		"Private-Token": viper.GetString("build_token"),
+		"Private-Token": viper.GetString("ci_gitlab_token"),
 	})
 }
 
+func validate() {
+	utils.ViperValidate("ci_gitlab_token", "token", "CI_GITLAB_TOKEN")
+	utils.ViperValidate("ci_api_v4_url", "server", "CI_API_V4_URL")
+}
+
 func get(endpoint string, response interface{}) {
+	validate()
 	res, err := resty.R().Get(endpoint)
 	if err != nil {
-		logger.ErrorLn(err)
-		os.Exit(1)
+		logrus.Fatalln(err)
 	}
 
 	if res.StatusCode() >= 400 {
-		logger.ErrorF("Status code: %d\nResponse: %s\n", res.StatusCode(), string(res.Body()))
-		os.Exit(1)
+		logrus.Fatalf("GET: %s\nStatus code: %d\nResponse: %s\n", endpoint, res.StatusCode(), string(res.Body()))
 	}
 
 	jsonErr := json.Unmarshal(res.Body(), response)
 
 	if jsonErr != nil {
-		logger.ErrorF("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
-		os.Exit(1)
+		logrus.Fatalf("GET: %s\nStatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", endpoint, res.StatusCode(), jsonErr, string(res.Body()))
 	}
 }
 
 func post(endpoint string, payload interface{}, response interface{}) {
+	validate()
 	res, err := resty.R().SetBody(payload).Post(endpoint)
 	if err != nil {
-		logger.ErrorLn(err)
-		os.Exit(1)
+		logrus.Fatalln(err)
 	}
 	if res.StatusCode() >= 400 {
-		logger.ErrorF("Status code: %d\nRequest: %#v\nResponse: %s\n", res.StatusCode(), payload, string(res.Body()))
-		os.Exit(1)
+		logrus.Fatalf("POST: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
 	}
 
 	jsonErr := json.Unmarshal(res.Body(), response)
 	if jsonErr != nil {
-		logger.ErrorF("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
-		os.Exit(1)
+		logrus.Fatalf("POST: %s\nStatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", endpoint, res.StatusCode(), jsonErr, string(res.Body()))
 	}
 }
 
 func put(endpoint string, payload interface{}, response interface{}) {
+	validate()
 	res, err := resty.R().SetBody(payload).Put(endpoint)
 	if err != nil {
-		logger.ErrorLn(err)
-		os.Exit(1)
+		logrus.Fatalln(err)
 	}
 	if res.StatusCode() >= 400 {
-		logger.ErrorF("Status code: %d\nRequest: %#v\nResponse: %s\n", res.StatusCode(), payload, string(res.Body()))
-		os.Exit(1)
+		logrus.Fatalf("PUT: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
 	}
 	if res.StatusCode() == 204 {
 		return
 	}
 	jsonErr := json.Unmarshal(res.Body(), response)
 	if jsonErr != nil {
-		logger.ErrorF("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
-		os.Exit(1)
+		logrus.Fatalf("PUT: %s\nStatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", endpoint, res.StatusCode(), jsonErr, string(res.Body()))
 	}
 }
 
 func GetMergeRequestIssueKeys(projectId string, mergeRequestIId string) []string {
+	// TODO read keys from commit messages
 	mergeRequest := GetMergeRequest(projectId, mergeRequestIId)
 	titleKeys := ExtractIssueKeys(mergeRequest.Title)
 	descriptionKeys := ExtractIssueKeys(mergeRequest.Description)

@@ -2,3 +2,4 @@
 **.iml
 /gitlab-cli
 /bin/
+/gitlab.env

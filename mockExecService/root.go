@@ -46,3 +46,15 @@ func (mr *MockIServiceMockRecorder) Exec(cmd interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exec", reflect.TypeOf((*MockIService)(nil).Exec), cmd)
 }
+
+// LogExec mocks base method
+func (m *MockIService) LogExec(cmd string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "LogExec", cmd)
+}
+
+// LogExec indicates an expected call of LogExec
+func (mr *MockIServiceMockRecorder) LogExec(cmd interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LogExec", reflect.TypeOf((*MockIService)(nil).LogExec), cmd)
+}

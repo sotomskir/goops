@@ -16,39 +16,39 @@
 package cmd
 
 import (
-	"os"
+	"github.com/sirupsen/logrus"
+	"github.com/sotomskir/gitlab-cli/pipelineApi"
 
 	"github.com/spf13/cobra"
 )
 
-// completionCmd represents the completion command
-var completionCmd = &cobra.Command{
-	Use:   "completion",
-	Short: "Generates bash completion script",
-	Long: `To load completion run
-
-. <(gitlab-cli completion)
-
-To configure your bash shell to load completions for each session add to your bashrc
-
-# ~/.bashrc or ~/.profile
-. <(gitlab-cli completion)
-`,
+// pipelineDockerBuildCmd represents the pipelineDockerBuild command
+var pipelineDockerBuildCmd = &cobra.Command{
+	Use:   "build PATH",
+	Aliases: []string{"b"},
+	Short: "Build docker image",
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		rootCmd.GenBashCompletion(os.Stdout)
+		dockerfile, _ := cmd.Flags().GetString("file")
+		tag, err := cmd.Flags().GetString("tag")
+		if err != nil {
+			logrus.Fatalln(err)
+		}
+		pipelineApi.DockerBuild(tag, dockerfile, args[0])
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(completionCmd)
+	pipelineDockerCmd.AddCommand(pipelineDockerBuildCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// completionCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// pipelineDockerBuildCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// completionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	pipelineDockerBuildCmd.Flags().StringP("file", "f", "Dockerfile", "Name of the Dockerfile (Default is 'PATH/Dockerfile')")
+	pipelineDockerBuildCmd.Flags().StringP("tag", "t", "", "Name and optionally a tag in the 'name:tag' format")
 }

@@ -15,20 +15,21 @@
 package cmd
 
 import (
-	"github.com/fatih/color"
 	"github.com/mitchellh/go-homedir"
+	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/gitlab-cli/execService"
 	"github.com/sotomskir/gitlab-cli/gitService"
 	"github.com/sotomskir/gitlab-cli/gitlabApi"
-	"github.com/sotomskir/gitlab-cli/logger"
+	"github.com/sotomskir/gitlab-cli/pipelineApi"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
 	"path"
 )
 
 var cfgFile string
 var noColor bool
+var debug bool
+var trace bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -41,22 +42,20 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		logger.ErrorLn(err)
-		os.Exit(1)
+		logrus.Fatalln(err)
 	}
 }
 
 func init() {
 	cobra.OnInitialize(initConfig)
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gitlab-cli.yaml)")
-
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.Flags().StringP("server", "s", "", "Gitlab API Url")
 	rootCmd.Flags().StringP("token", "a", "", "Gitlab API auth token")
 	viper.BindPFlag("api_v4_url", rootCmd.Flags().Lookup("server"))
-	viper.BindPFlag("build_token", rootCmd.Flags().Lookup("token"))
+	viper.BindPFlag("gitlab_token", rootCmd.Flags().Lookup("token"))
 	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Disable ANSI color output")
+	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Debug output")
+	rootCmd.PersistentFlags().BoolVar(&trace, "trace", false, "Trace output")
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
@@ -69,8 +68,17 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if noColor {
-		color.NoColor = true
+	logrus.SetFormatter(&logrus.TextFormatter{
+		DisableColors: noColor,
+		ForceColors: true,
+		DisableTimestamp: true,
+		DisableLevelTruncation: true,
+	})
+	if debug {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
+	if trace {
+		logrus.SetLevel(logrus.TraceLevel)
 	}
 	if cfgFile != "" {
 		// Use config file from the flag.
@@ -79,8 +87,7 @@ func initConfig() {
 		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
-			logger.ErrorLn(err)
-			os.Exit(1)
+			logrus.Fatalln(err)
 		}
 
 		// Search config in home directory with name ".gitlab-cli" (without extension).
@@ -88,18 +95,17 @@ func initConfig() {
 		viper.SetConfigName(".gitlab-cli")
 	}
 
-	viper.SetEnvPrefix("CI")
 	viper.AutomaticEnv() // read in environment variables that match
-	gitlabApi.Initialize()
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		//fmt.Println("Using config file:", viper.ConfigFileUsed())
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
-			logger.ErrorLn(err)
-			os.Exit(1)
+			logrus.Fatalln(err)
 		}
 		viper.WriteConfigAs(path.Join(home, "/.gitlab-cli.yaml"))
 	}
+	gitlabApi.Initialize()
+	pipelineApi.Initialize(execService.Service{})
 }

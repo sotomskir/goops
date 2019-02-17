@@ -15,15 +15,25 @@
 package execService
 
 import (
+	"bufio"
+	"fmt"
+	"log"
 	"os/exec"
 	"strings"
 )
 
+var e IService = Service{}
+
 type IService interface {
 	Exec(cmd string) (string, error)
+	LogExec(cmd string)
 }
 
 type Service struct {
+}
+
+func Exec(cmd string) (string, error) {
+	return e.Exec(cmd)
 }
 
 func (s Service) Exec(cmd string) (string, error) {
@@ -32,4 +42,31 @@ func (s Service) Exec(cmd string) (string, error) {
 	arg := args[1:]
 	out, err := exec.Command(name, arg...).CombinedOutput()
 	return strings.Trim(string(out), " \n"), err
+}
+
+func (s Service) LogExec(command string) {
+	args := strings.Split(command, " ")
+	name := args[0]
+	arg := args[1:]
+	cmd := exec.Command(name, arg...)
+	cmdReader, err := cmd.StdoutPipe()
+	if err != nil {
+		log.Fatal(err)
+	}
+	scanner := bufio.NewScanner(cmdReader)
+	go func() {
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+		}
+	}()
+	if err := cmd.Start(); err != nil {
+		log.Fatal(err)
+	}
+	if err := cmd.Wait(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func LogExec(cmd string) {
+	e.LogExec(cmd)
 }

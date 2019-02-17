@@ -16,9 +16,10 @@ package gitService
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/gitlab-cli/execService"
-	"github.com/sotomskir/gitlab-cli/logger"
-	"os"
+	"github.com/spf13/viper"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -45,12 +46,11 @@ func GetPreviousTag() string {
 	return out
 }
 
-func BumpVersion(version string) string {
+func BumpMinorVersion(version string) string {
 	splitted := strings.Split(version, ".")
 	minor, err := strconv.Atoi(splitted[1])
 	if err != nil {
-		logger.ErrorF("Error: BumpVersion probably version: '%s' has invalid semver format.: %#v\n", version, err)
-		os.Exit(1)
+		logrus.Fatalf("Error: BumpMinorVersion probably version: '%s' has invalid semver format.: %#v\n", version, err)
 	}
 	splitted[1] = fmt.Sprintf("%d", minor+1)
 	patch := strings.Split(splitted[2], "-")
@@ -63,16 +63,69 @@ func BumpVersion(version string) string {
 	return semver
 }
 
-func GetSemanticVersion() string {
+func BumpPatchVersion(version string) string {
+	splited := strings.Split(version, ".")
+	major := splited[0]
+	minor := splited[1]
+	patch, err := strconv.Atoi(strings.Split(splited[2], "-")[0])
+	if err != nil {
+		logrus.Fatalf("Error: BumpPatchVersion probably version: '%s' has invalid semver format.: %#v\n", version, err)
+	}
+	identifier := strings.Join(strings.Split(splited[2], "-")[1:], "-")
+	splited[2] = fmt.Sprintf("%d", patch+1)
+	semver := fmt.Sprintf("%s.%s.%d", major, minor, patch + 1)
+	if identifier != "" {
+		semver = fmt.Sprintf("%s-%s", semver, identifier)
+	}
+	return semver
+}
+
+func GetSemanticVersion() (string, string) {
 	headTag := GetHeadTag()
 	if headTag != "" {
-		return headTag
+		return headTag, headTag
 	}
 
 	previousTag := GetPreviousTag()
 	if previousTag != "" {
-		return fmt.Sprintf("%s-SNAPSHOT", BumpVersion(previousTag))
+		version := previousTag
+		if IsStableBranch() {
+			version = BumpPatchVersion(version)
+		} else {
+			version = BumpMinorVersion(version)
+		}
+		return fmt.Sprintf("%s-SNAPSHOT", version), version
 	}
 
-	return "0.1.0-SNAPSHOT"
+	return "0.1.0-SNAPSHOT", "0.1.0"
+}
+
+func IsStableBranch() bool {
+	branch, err := service.Exec("git rev-parse --abbrev-ref HEAD")
+	if err != nil {
+		logrus.Fatalln(branch, err)
+	}
+	match, _ := regexp.MatchString("^.*-stable$", branch)
+	match2, _ := regexp.MatchString("^.*-stable$", viper.GetString("CI_COMMIT_REF_NAME"))
+	return match || match2
+}
+
+func GetPreviousMergeRequestIid() string {
+	previousMerge, err := service.Exec("git --no-pager log -1 --merges")
+	if err != nil {
+		logrus.Fatalln(err)
+	}
+	if previousMerge == "" {
+		logrus.Fatalln("Merge request not found")
+	}
+	return ExtractMergeRequestIid(previousMerge)
+}
+
+func ExtractMergeRequestIid(s string) string {
+	regex := regexp.MustCompile("!(\\d+)")
+	match := regex.FindStringSubmatch(s)
+	if len(match) < 2 {
+		logrus.Fatalln("Merge request not found")
+	}
+	return match[1]
 }

@@ -11,7 +11,7 @@ You can download pre-build binary here: https://github.com/sotomskir/gitlab-cli/
 
 ## Usage
 ### Gitlab API auth
-If You run gitlab-cli from Gitlab pipeline it will read API URL and auth token from env variables `CI_BUILD_TOKEN` and `CI_API_V4_URL`.
+If You run gitlab-cli from Gitlab pipeline it will read API URL and auth token from env variables `CI_GITLAB_TOKEN` and `CI_API_V4_URL`.
 You can also set these by `--token` and `--server` flags like this:
 ```bash
 gitlab-cli --server https://gitlab.com/api/v4 --token XKSGhwe_dsbu27Gs
@@ -19,7 +19,7 @@ gitlab-cli --server https://gitlab.com/api/v4 --token XKSGhwe_dsbu27Gs
 Another way is to use configuration file (`~/.gitlab-cli.yaml` by default)
 ```
 # ~/.gitlab-cli.yaml
-build_token: XKSGhwe_dsbu27Gs
+gitlab_token: XKSGhwe_dsbu27Gs
 api_v4_url: https://gitlab.com/api/v4
 ```
 
@@ -100,6 +100,6 @@ Table below shows all configuration options and corresponding flags and environm
 |Configuration option|Environment variable|Flag      |
 |--------------------|--------------------|----------|
 |api_v4_url          |CI_API_V4_URL       |--server  |
-|build_token         |CI_BUILD_TOKEN      |--token   |
+|gitlab_token        |CI_GITLAB_TOKEN     |--token   |
 |merge_request_iid   |CI_MERGE_REQUEST_IID|--mr      |
 |project_id          |CI_PROJECT_ID       |--project |

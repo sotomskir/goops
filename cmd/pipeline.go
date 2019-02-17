@@ -13,15 +13,29 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-package main
+package cmd
 
 import (
-	"github.com/sirupsen/logrus"
-	"github.com/sotomskir/gitlab-cli/cmd"
+	"github.com/spf13/cobra"
 )
 
-var log = logrus.New()
+// pipelineCmd represents the pipeline command
+var pipelineCmd = &cobra.Command{
+	Use:   "pipeline",
+	Aliases: []string{"p"},
+	Short: "High level API for use with Gitlab CI pipelines",
+}
 
-func main() {
-	cmd.Execute()
+func init() {
+	rootCmd.AddCommand(pipelineCmd)
+
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// pipelineCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// pipelineCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
