@@ -47,37 +47,38 @@ func GetPreviousTag() string {
 }
 
 func BumpMinorVersion(version string) string {
-	splitted := strings.Split(version, ".")
-	minor, err := strconv.Atoi(splitted[1])
-	if err != nil {
-		logrus.Fatalf("Error: BumpMinorVersion probably version: '%s' has invalid semver format.: %#v\n", version, err)
-	}
-	splitted[1] = fmt.Sprintf("%d", minor+1)
-	patch := strings.Split(splitted[2], "-")
-	identifier := strings.Join(patch[1:], "-")
-	splitted[2] = "0"
-	semver := strings.Join(splitted, ".")
-	if identifier != "" {
-		semver = fmt.Sprintf("%s-%s", semver, identifier)
-	}
-	return semver
+	major, minor, _, identifier := SplitSemver(version)
+	return fmt.Sprintf("%d.%d.%d%s", major, minor + 1, 0, identifier)
 }
 
 func BumpPatchVersion(version string) string {
+	major, minor, patch, identifier := SplitSemver(version)
+	return fmt.Sprintf("%d.%d.%d%s", major, minor, patch + 1, identifier)
+}
+
+func SplitSemver(version string) (int, int, int, string) {
 	splited := strings.Split(version, ".")
-	major := splited[0]
-	minor := splited[1]
-	patch, err := strconv.Atoi(strings.Split(splited[2], "-")[0])
+	if len(splited) < 3 {
+		logrus.Fatalf("Invalid semver format: %s\n", version)
+	}
+	major, err := strconv.Atoi(splited[0])
 	if err != nil {
-		logrus.Fatalf("Error: BumpPatchVersion probably version: '%s' has invalid semver format.: %#v\n", version, err)
+		logrus.Fatalf("Error converting major version: %s to int\n", splited[0])
 	}
-	identifier := strings.Join(strings.Split(splited[2], "-")[1:], "-")
-	splited[2] = fmt.Sprintf("%d", patch+1)
-	semver := fmt.Sprintf("%s.%s.%d", major, minor, patch + 1)
+	minor, err := strconv.Atoi(splited[1])
+	if err != nil {
+		logrus.Fatalf("Error converting patch version: %s to int\n", splited[1])
+	}
+	splitedPatch := strings.Split(splited[2], "-")
+	patch, err := strconv.Atoi(splitedPatch[0])
+	if err != nil {
+		logrus.Fatalf("Error converting patch version: %s to int\n", splitedPatch[0])
+	}
+	identifier := strings.Join(splitedPatch[1:], "-")
 	if identifier != "" {
-		semver = fmt.Sprintf("%s-%s", semver, identifier)
+		identifier = "-" + identifier
 	}
-	return semver
+	return major, minor, patch, identifier
 }
 
 func GetSemanticVersion() (string, string) {
@@ -85,29 +86,78 @@ func GetSemanticVersion() (string, string) {
 	if headTag != "" {
 		return headTag, headTag
 	}
-
 	previousTag := GetPreviousTag()
-	if previousTag != "" {
-		version := previousTag
-		if IsStableBranch() {
-			version = BumpPatchVersion(version)
-		} else {
+	if previousTag == "" {
+		return "0.1.0-SNAPSHOT", "0.1.0"
+	}
+	var version string
+	if IsStableBranch(GetCurrentBranchName()) {
+		version = GetVersionForStableBranch(previousTag)
+	} else {
+		version = BumpMinorVersion(previousTag)
+		println(version)
+		if StableBranchExists(version) {
 			version = BumpMinorVersion(version)
 		}
-		return fmt.Sprintf("%s-SNAPSHOT", version), version
 	}
-
-	return "0.1.0-SNAPSHOT", "0.1.0"
+	return fmt.Sprintf("%s-SNAPSHOT", version), version
 }
 
-func IsStableBranch() bool {
+func StableBranchExists(version string) bool {
+	major, minor, _, _ := SplitSemver(version)
+	res, err := service.Exec(fmt.Sprintf("git --no-pager branch --remotes --list '*%d.%d-stable'", major, minor))
+	if err != nil {
+		logrus.Fatalln(res, err)
+	}
+	return res != ""
+}
+
+func GetVersionForStableBranch(previousTag string) string {
+	if VersionMatchBranchName(previousTag, GetCurrentBranchName()) {
+		return BumpPatchVersion(previousTag)
+	}
+	return GetVersionFromBranchName(GetCurrentBranchName())
+}
+
+func GetVersionFromBranchName(branch string) string {
+	if IsStableBranch(branch) {
+		regex := regexp.MustCompile("^(.*)-stable")
+		match := regex.FindStringSubmatch(branch)
+		if len(match) < 2 {
+			logrus.Fatalf("Version not found in branch name: %s\n", branch)
+		}
+		return fmt.Sprintf("%s.0", match[1])
+	}
+	regex := regexp.MustCompile("(\\d+\\.\\d+\\.\\d+)")
+	match := regex.FindStringSubmatch(branch)
+	if len(match) < 2 {
+		logrus.Fatalf("Version not found in branch name: %s\n", branch)
+	}
+	return match[1]
+}
+
+func VersionMatchBranchName(version string, branch string) bool {
+	regex := regexp.MustCompile("(\\d+\\.\\d+)")
+	match := regex.FindStringSubmatch(branch)
+	match2 := regex.FindStringSubmatch(version)
+	if len(match) < 2 || len(match2) < 2 {
+		logrus.Fatalf("Version not found in branch name: %s\n", branch)
+	}
+	return match[1] == match2[1]
+}
+
+func IsStableBranch(branch string) bool {
+	match, _ := regexp.MatchString("^.*-stable$", branch)
+	match2, _ := regexp.MatchString("^.*-stable$", viper.GetString("CI_COMMIT_REF_NAME"))
+	return match || match2
+}
+
+func GetCurrentBranchName() string {
 	branch, err := service.Exec("git rev-parse --abbrev-ref HEAD")
 	if err != nil {
 		logrus.Fatalln(branch, err)
 	}
-	match, _ := regexp.MatchString("^.*-stable$", branch)
-	match2, _ := regexp.MatchString("^.*-stable$", viper.GetString("CI_COMMIT_REF_NAME"))
-	return match || match2
+	return branch
 }
 
 func GetPreviousMergeRequestIid() string {

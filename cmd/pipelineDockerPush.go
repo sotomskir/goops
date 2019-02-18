@@ -16,7 +16,6 @@
 package cmd
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/gitlab-cli/pipelineApi"
 
 	"github.com/spf13/cobra"
@@ -33,11 +32,7 @@ If build is from git tag it will also push image with "stable" tag.
 If build is from master branch it will also push image with "latest" tag`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		tag, err := cmd.Flags().GetString("tag")
-		if err != nil {
-			logrus.Fatalln(err)
-		}
-		pipelineApi.DockerPush(tag)
+		pipelineApi.DockerPush(args[0])
 	},
 }
 
@@ -52,5 +47,4 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	pipelineDockerPushCmd.Flags().StringP("tag", "t", "", "Name and optionally a tag in the 'name:tag' format")
 }

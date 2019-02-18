@@ -51,4 +51,5 @@ func init() {
 	// is called directly, e.g.:
 	pipelineDockerBuildCmd.Flags().StringP("file", "f", "Dockerfile", "Name of the Dockerfile (Default is 'PATH/Dockerfile')")
 	pipelineDockerBuildCmd.Flags().StringP("tag", "t", "", "Name and optionally a tag in the 'name:tag' format")
+	pipelineDockerBuildCmd.MarkFlagRequired("tag")
 }

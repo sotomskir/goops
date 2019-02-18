@@ -49,14 +49,24 @@ func (s Service) LogExec(command string) {
 	name := args[0]
 	arg := args[1:]
 	cmd := exec.Command(name, arg...)
-	cmdReader, err := cmd.StdoutPipe()
+	cmdOutReader, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
 	}
-	scanner := bufio.NewScanner(cmdReader)
+	outScanner := bufio.NewScanner(cmdOutReader)
 	go func() {
-		for scanner.Scan() {
-			fmt.Println(scanner.Text())
+		for outScanner.Scan() {
+			fmt.Println(outScanner.Text())
+		}
+	}()
+	cmdErrReader, err := cmd.StderrPipe()
+	if err != nil {
+		log.Fatal(err)
+	}
+	errScanner := bufio.NewScanner(cmdErrReader)
+	go func() {
+		for errScanner.Scan() {
+			fmt.Println(errScanner.Text())
 		}
 	}()
 	if err := cmd.Start(); err != nil {
