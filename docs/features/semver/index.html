@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>Auto semver - goops</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Auto semver";
+    var mkdocs_page_input_path = "features/semver.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> goops</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../..">Home</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../getting-started/">Getting started</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Features</span>
+    <ul class="subnav">
+                <li class=" current">
+                    
+    <a class="current" href="./">Auto semver</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#description">Description</a></li>
+    
+
+    <li class="toctree-l3"><a href="#output-variables">Output variables</a></li>
+    
+
+    <li class="toctree-l3"><a href="#configuration-defaults">Configuration defaults</a></li>
+    
+
+    <li class="toctree-l3"><a href="#gitlab-flow-strategy">gitlab-flow strategy</a></li>
+    
+
+    </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../jira/">Jira integration</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../docker/">Docker stable & latest</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../nightly-releases/">Nightly releases</a>
+                </li>
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../examples/">Examples</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Commands</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../../commands/goops_init.md">init</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../../commands/goops_setenv.md">setenv</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../../commands/goops_transition.md">transition</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../../commands/goops_tag.md">tag</a>
+                </li>
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Plumbing commands</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../../commands/goops_version/">version</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">goops</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Features &raquo;</li>
+        
+      
+    
+    <li>Auto semver</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h2 id="description">Description</h2>
+<p>Auto semantic version based on selected strategy.
+Available strategies:</p>
+<ul>
+<li>gitlab-flow</li>
+</ul>
+<h2 id="output-variables">Output variables</h2>
+<pre><code class="console">GOOPS_SEMVER=1.2.3-SNAPSHOT
+GOOPS_SEMVER_RELEASE=1.2.3
+GOOPS_SEMVER_MAJOR=1
+GOOPS_SEMVER_MINOR=2
+GOOPS_SEMVER_PATCH=3
+</code></pre>
+
+<h2 id="configuration-defaults">Configuration defaults</h2>
+<pre><code class="console">GOOPSC_SEMVER=false
+GOOPSC_SEMVER_STRATEGY=gitlab-flow
+</code></pre>
+
+<h2 id="gitlab-flow-strategy">gitlab-flow strategy</h2>
+<p>This strategy is designed for Gitlab flow with release branches. 
+Which is described in <a href="https://docs.gitlab.com/ee/workflow/gitlab_flow.html#release-branches-with-gitlab-flow">Gitlab documentation</a></p>
+<p>rules for master branch</p>
+<ol>
+<li>Find previous tag. If there are no tags previous tag will be assumed as 0.0.0</li>
+<li>Bump previous tag minor version and set patch version to 0.</li>
+<li>If *-stable branch matching version exists bump minor version once more.</li>
+<li>Append "-SNAPSHOT" to version.</li>
+</ol>
+<p>rules for *-stable branches</p>
+<ol>
+<li>If HEAD is tagged use tag as version.</li>
+<li>Else find previous tag and bump patch version.</li>
+<li>If tag not exists take version from branch name and set patch to 0.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>current branch</th>
+<th>tag</th>
+<th>previousTag</th>
+<th>stableBranch</th>
+<th>version</th>
+<th>release version</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>master</td>
+<td></td>
+<td></td>
+<td></td>
+<td>0.1.0-SNAPSHOT</td>
+<td>0.1.0</td>
+</tr>
+<tr>
+<td>master</td>
+<td></td>
+<td></td>
+<td>0.1-stable</td>
+<td>0.2.0-SNAPSHOT</td>
+<td>0.2.0</td>
+</tr>
+<tr>
+<td>master</td>
+<td></td>
+<td>0.1.0</td>
+<td>0.1-stable</td>
+<td>0.2.0-SNAPSHOT</td>
+<td>0.2.0</td>
+</tr>
+<tr>
+<td>master</td>
+<td></td>
+<td>0.1.1</td>
+<td>0.1-stable</td>
+<td>0.2.0-SNAPSHOT</td>
+<td>0.2.0</td>
+</tr>
+<tr>
+<td>master</td>
+<td>0.1.1</td>
+<td>0.1.0</td>
+<td>0.1-stable</td>
+<td>0.2.0-SNAPSHOT</td>
+<td>0.2.0</td>
+</tr>
+<tr>
+<td>0.1-stable</td>
+<td></td>
+<td></td>
+<td>0.1-stable</td>
+<td>0.1.0-SNAPSHOT</td>
+<td>0.1.0</td>
+</tr>
+<tr>
+<td>0.1-stable</td>
+<td>0.1.0</td>
+<td></td>
+<td>0.1-stable</td>
+<td>0.1.0</td>
+<td>0.1.0</td>
+</tr>
+<tr>
+<td>0.1-stable</td>
+<td></td>
+<td>0.1.0</td>
+<td>0.1-stable</td>
+<td>0.1.1-SNAPSHOT</td>
+<td>0.1.1</td>
+</tr>
+<tr>
+<td>0.1-stable</td>
+<td>0.1.1</td>
+<td>0.1.0</td>
+<td>0.1-stable</td>
+<td>0.1.1</td>
+<td>0.1.1</td>
+</tr>
+<tr>
+<td>0.2-stable</td>
+<td></td>
+<td></td>
+<td>0.2-stable</td>
+<td>0.2.0-SNAPSHOT</td>
+<td>0.2.0</td>
+</tr>
+</tbody>
+</table>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../jira/" class="btn btn-neutral float-right" title="Jira integration">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../../getting-started/" class="btn btn-neutral" title="Getting started"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../../getting-started/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../jira/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+
+</body>
+</html>

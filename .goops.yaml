@@ -1,0 +1,2 @@
+goopsc_semver: true
+goopsc_semver_strategy: github-flow

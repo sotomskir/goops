@@ -17,7 +17,7 @@ package main
 
 import (
 	"github.com/sirupsen/logrus"
-	"github.com/sotomskir/gitlab-cli/cmd"
+	"github.com/sotomskir/goops/cmd"
 )
 
 var log = logrus.New()

@@ -16,11 +16,11 @@ package gitService
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/sotomskir/gitlab-cli/execService"
+	"github.com/sotomskir/goops/execService"
 	"github.com/spf13/viper"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -35,7 +35,7 @@ func GetHeadTag() string {
 	if err != nil {
 		return ""
 	}
-	return out
+	return strings.Trim(out, " \n\t")
 }
 
 func GetPreviousTag() string {
@@ -43,68 +43,10 @@ func GetPreviousTag() string {
 	if err != nil {
 		return ""
 	}
-	return out
+	return strings.Trim(out, " \n\t")
 }
 
-func BumpMinorVersion(version string) string {
-	major, minor, _, identifier := SplitSemver(version)
-	return fmt.Sprintf("%d.%d.%d%s", major, minor + 1, 0, identifier)
-}
-
-func BumpPatchVersion(version string) string {
-	major, minor, patch, identifier := SplitSemver(version)
-	return fmt.Sprintf("%d.%d.%d%s", major, minor, patch + 1, identifier)
-}
-
-func SplitSemver(version string) (int, int, int, string) {
-	splited := strings.Split(version, ".")
-	if len(splited) < 3 {
-		logrus.Fatalf("Invalid semver format: %s\n", version)
-	}
-	major, err := strconv.Atoi(splited[0])
-	if err != nil {
-		logrus.Fatalf("Error converting major version: %s to int\n", splited[0])
-	}
-	minor, err := strconv.Atoi(splited[1])
-	if err != nil {
-		logrus.Fatalf("Error converting patch version: %s to int\n", splited[1])
-	}
-	splitedPatch := strings.Split(splited[2], "-")
-	patch, err := strconv.Atoi(splitedPatch[0])
-	if err != nil {
-		logrus.Fatalf("Error converting patch version: %s to int\n", splitedPatch[0])
-	}
-	identifier := strings.Join(splitedPatch[1:], "-")
-	if identifier != "" {
-		identifier = "-" + identifier
-	}
-	return major, minor, patch, identifier
-}
-
-func GetSemanticVersion() (string, string) {
-	headTag := GetHeadTag()
-	if headTag != "" {
-		return headTag, headTag
-	}
-	previousTag := GetPreviousTag()
-	if previousTag == "" {
-		return "0.1.0-SNAPSHOT", "0.1.0"
-	}
-	var version string
-	if IsStableBranch(GetCurrentBranchName()) {
-		version = GetVersionForStableBranch(previousTag)
-	} else {
-		version = BumpMinorVersion(previousTag)
-		println(version)
-		if StableBranchExists(version) {
-			version = BumpMinorVersion(version)
-		}
-	}
-	return fmt.Sprintf("%s-SNAPSHOT", version), version
-}
-
-func StableBranchExists(version string) bool {
-	major, minor, _, _ := SplitSemver(version)
+func StableBranchExists(major int, minor int) bool {
 	res, err := service.Exec(fmt.Sprintf("git --no-pager branch --remotes --list '*%d.%d-stable'", major, minor))
 	if err != nil {
 		logrus.Fatalln(res, err)
@@ -112,44 +54,12 @@ func StableBranchExists(version string) bool {
 	return res != ""
 }
 
-func GetVersionForStableBranch(previousTag string) string {
-	if VersionMatchBranchName(previousTag, GetCurrentBranchName()) {
-		return BumpPatchVersion(previousTag)
+func BranchExists(version string) bool {
+	res, err := service.Exec(fmt.Sprintf("git --no-pager branch --remotes --list '*%s*'", version))
+	if err != nil {
+		logrus.Fatalln(res, err)
 	}
-	return GetVersionFromBranchName(GetCurrentBranchName())
-}
-
-func GetVersionFromBranchName(branch string) string {
-	if IsStableBranch(branch) {
-		regex := regexp.MustCompile("^(.*)-stable")
-		match := regex.FindStringSubmatch(branch)
-		if len(match) < 2 {
-			logrus.Fatalf("Version not found in branch name: %s\n", branch)
-		}
-		return fmt.Sprintf("%s.0", match[1])
-	}
-	regex := regexp.MustCompile("(\\d+\\.\\d+\\.\\d+)")
-	match := regex.FindStringSubmatch(branch)
-	if len(match) < 2 {
-		logrus.Fatalf("Version not found in branch name: %s\n", branch)
-	}
-	return match[1]
-}
-
-func VersionMatchBranchName(version string, branch string) bool {
-	regex := regexp.MustCompile("(\\d+\\.\\d+)")
-	match := regex.FindStringSubmatch(branch)
-	match2 := regex.FindStringSubmatch(version)
-	if len(match) < 2 || len(match2) < 2 {
-		logrus.Fatalf("Version not found in branch name: %s\n", branch)
-	}
-	return match[1] == match2[1]
-}
-
-func IsStableBranch(branch string) bool {
-	match, _ := regexp.MatchString("^.*-stable$", branch)
-	match2, _ := regexp.MatchString("^.*-stable$", viper.GetString("CI_COMMIT_REF_NAME"))
-	return match || match2
+	return res != ""
 }
 
 func GetCurrentBranchName() string {
@@ -158,6 +68,14 @@ func GetCurrentBranchName() string {
 		logrus.Fatalln(branch, err)
 	}
 	return branch
+}
+
+func GetCommitMsg() string {
+	msg, err := service.Exec("git --no-pager log -1 --pretty=%B")
+	if err != nil {
+		logrus.Fatalln(msg, err)
+	}
+	return msg
 }
 
 func GetPreviousMergeRequestIid() string {
@@ -178,4 +96,55 @@ func ExtractMergeRequestIid(s string) string {
 		logrus.Fatalln("Merge request not found")
 	}
 	return match[1]
+}
+
+func setupGit() {
+	viper.SetDefault("GOOPSC_GIT_USER_EMAIL", "travis@travis-ci.org")
+	viper.SetDefault("GOOPSC_GIT_USER_NAME", "Travis CI")
+	service.Exec(fmt.Sprintf("git config --global user.email '%s'", viper.GetString("GOOPSC_GIT_USER_EMAIL")))
+	service.Exec(fmt.Sprintf("git config --global user.name '%s'", viper.GetString("GOOPSC_GIT_USER_NAME")))
+}
+
+func TagNightly() {
+	if viper.GetString("TRAVIS_PULL_REQUEST") == "false" && viper.GetString("TRAVIS_BRANCH") == "master" && viper.GetString("TRAVIS_TAG") == "" {
+		setupGit()
+		service.LogExec("git tag -f nightly")
+		output, err := service.Exec("git --no-pager remote")
+		if err != nil {
+			panic(err)
+		}
+		if strings.Contains(output, "goops-remote") {
+			service.LogExec("git remote remove goops-remote")
+		}
+		_, err = service.Exec(
+			fmt.Sprintf(
+				"git remote add goops-remote https://%s:%s@github.com/%s.git",
+				viper.GetString("GOOPSC_GITHUB_USER"),
+				viper.GetString("GOOPSC_GITHUB_TOKEN"),
+				viper.GetString("TRAVIS_REPO_SLUG")))
+		if err != nil {
+			panic("error adding remote goops-remote")
+		}
+		_, err = service.Exec("git push -f --tags goops-remote")
+		if err != nil {
+			panic("error pushing tag")
+		}
+		service.LogExec("git remote remove goops-remote")
+	}
+}
+
+func GetPreviouslyMergedVersion() (string, error) {
+	msg, err := service.Exec("git --no-pager log -n 1 --merges")
+	if err != nil {
+		return "", err
+	}
+	if msg == "" {
+		msg = "0.0.0"
+	}
+	regex := regexp.MustCompile("(\\d+\\.\\d+\\.\\d+)")
+	match := regex.FindStringSubmatch(msg)
+	if len(match) < 1 {
+		return "", errors.New("Version not found")
+	}
+	return match[0], nil
 }

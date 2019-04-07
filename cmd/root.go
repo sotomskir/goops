@@ -15,26 +15,26 @@
 package cmd
 
 import (
-	"github.com/mitchellh/go-homedir"
 	"github.com/sirupsen/logrus"
-	"github.com/sotomskir/gitlab-cli/execService"
-	"github.com/sotomskir/gitlab-cli/gitService"
-	"github.com/sotomskir/gitlab-cli/gitlabApi"
-	"github.com/sotomskir/gitlab-cli/pipelineApi"
+	"github.com/sotomskir/goops/execService"
+	"github.com/sotomskir/goops/features/docker"
+	"github.com/sotomskir/goops/gitService"
+	"github.com/sotomskir/goops/gitlabApi"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"path"
+	"gopkg.in/resty.v1"
 )
 
 var cfgFile string
 var noColor bool
 var debug bool
+var info bool
 var trace bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "gitlab-cli",
-	Short: "Gitlab REST API command line client.",
+	Use:              "goops",
+	Short:            "DevOps toolset written in Go.",
 	TraverseChildren: true,
 }
 
@@ -48,12 +48,13 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gitlab-cli.yaml)")
-	rootCmd.Flags().StringP("server", "s", "", "Gitlab API Url")
-	rootCmd.Flags().StringP("token", "a", "", "Gitlab API auth token")
-	viper.BindPFlag("api_v4_url", rootCmd.Flags().Lookup("server"))
-	viper.BindPFlag("gitlab_token", rootCmd.Flags().Lookup("token"))
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.goops.yaml)")
+	//rootCmd.Flags().StringP("server", "s", "", "Gitlab API Url")
+	//rootCmd.Flags().StringP("token", "a", "", "Gitlab API auth token")
+	//viper.BindPFlag("api_v4_url", rootCmd.Flags().Lookup("server"))
+	//viper.BindPFlag("gitlab_token", rootCmd.Flags().Lookup("token"))
 	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Disable ANSI color output")
+	rootCmd.PersistentFlags().BoolVar(&info, "info", false, "Info output")
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Debug output")
 	rootCmd.PersistentFlags().BoolVar(&trace, "trace", false, "Trace output")
 	// Here you will define your flags and configuration settings.
@@ -64,35 +65,35 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	gitService.Initialize(execService.Service{})
+	resty.SetDisableWarn(true)
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	return
 	logrus.SetFormatter(&logrus.TextFormatter{
-		DisableColors: noColor,
-		ForceColors: true,
-		DisableTimestamp: true,
+		DisableColors:          noColor,
+		ForceColors:            true,
+		DisableTimestamp:       true,
 		DisableLevelTruncation: true,
 	})
+	logrus.SetLevel(logrus.ErrorLevel)
 	if debug {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 	if trace {
 		logrus.SetLevel(logrus.TraceLevel)
 	}
+	if info {
+		logrus.SetLevel(logrus.InfoLevel)
+	}
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			logrus.Fatalln(err)
-		}
-
-		// Search config in home directory with name ".gitlab-cli" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".gitlab-cli")
+		// Search config in home directory with name ".goops" (without extension).
+		viper.AddConfigPath(".")
+		viper.SetConfigName(".goops")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
@@ -100,12 +101,8 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		//fmt.Println("Using config file:", viper.ConfigFileUsed())
 	} else {
-		home, err := homedir.Dir()
-		if err != nil {
-			logrus.Fatalln(err)
-		}
-		viper.WriteConfigAs(path.Join(home, "/.gitlab-cli.yaml"))
+		viper.WriteConfigAs(".goops.yaml")
 	}
 	gitlabApi.Initialize()
-	pipelineApi.Initialize(execService.Service{})
+	docker.Initialize(execService.Service{})
 }

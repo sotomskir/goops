@@ -16,25 +16,19 @@
 package cmd
 
 import (
-	"fmt"
-	"github.com/sotomskir/gitlab-cli/gitlabApi"
-	"github.com/sotomskir/gitlab-cli/utils"
+	"github.com/sotomskir/goops/features/jira"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 // issueCmd represents the issue command
 var issueCmd = &cobra.Command{
-	Use:   "issues",
-	Short: "List Jira issue keys mentioned in merge request title, description and commit messages",
+	Use:     "issues",
+	Short:   "List Jira issue keys mentioned in merge request title, description and commit messages",
 	Aliases: []string{"i"},
+	Hidden:  true,
 	Run: func(cmd *cobra.Command, args []string) {
-		utils.ViperValidate("ci_merge_request_iid", "mr", "CI_MERGE_REQUEST_IID")
-		utils.ViperValidate("ci_project_id", "project", "CI_PROJECT_ID")
-		issueKeys := gitlabApi.GetMergeRequestIssueKeys(viper.GetString("ci_project_id"), viper.GetString("ci_merge_request_iid"))
-		for _, v := range issueKeys {
-			fmt.Println(v)
-		}
+		jira.GetIssues()
 	},
 }
 
@@ -50,8 +44,8 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// issueCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	issueCmd.Flags().StringP( "project", "p", "", "Project id")
-	issueCmd.Flags().StringP( "mr", "m", "", "Merge request iid")
+	issueCmd.Flags().StringP("project", "p", "", "Project id")
+	issueCmd.Flags().StringP("mr", "m", "", "Merge request iid")
 
 	viper.BindPFlag("ci_project_id", issueCmd.Flags().Lookup("project"))
 	viper.BindPFlag("ci_merge_request_iid", issueCmd.Flags().Lookup("mr"))

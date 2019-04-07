@@ -23,10 +23,11 @@ import (
 
 // exportCmd represents the export command
 var exportCmd = &cobra.Command{
-	Use:   "export VAR [VAR...]",
+	Use:     "export VAR [VAR...]",
 	Aliases: []string{"e"},
-	Short: "Generate environment variables export",
-	Args: cobra.MinimumNArgs(1),
+	Short:   "Generate environment variables export",
+	Hidden:  true,
+	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, v := range args {
 			fmt.Printf("export %s=\"%s\"\n", v, os.Getenv(v))

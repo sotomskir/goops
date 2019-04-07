@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>version - goops</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "version";
+    var mkdocs_page_input_path = "commands/goops_version.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> goops</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../..">Home</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../getting-started/">Getting started</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Features</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../../features/semver/">Auto semver</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../../features/jira/">Jira integration</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../../features/docker/">Docker stable & latest</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../../features/nightly-releases/">Nightly releases</a>
+                </li>
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../examples/">Examples</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Commands</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../goops_init.md">init</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../goops_setenv.md">setenv</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../goops_transition.md">transition</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../goops_tag.md">tag</a>
+                </li>
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Plumbing commands</span>
+    <ul class="subnav">
+                <li class=" current">
+                    
+    <a class="current" href="./">version</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#goops-version">goops version</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#synopsis">Synopsis</a></li>
+        
+            <li><a class="toctree-l4" href="#options">Options</a></li>
+        
+            <li><a class="toctree-l4" href="#options-inherited-from-parent-commands">Options inherited from parent commands</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">SEE ALSO</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">goops</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Plumbing commands &raquo;</li>
+        
+      
+    
+    <li>version</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h2 id="goops-version">goops version</h2>
+<p>Generate semantic version for current HEAD</p>
+<h3 id="synopsis">Synopsis</h3>
+<p>Generate semantic version for current HEAD.
+Version generation is based on git tags.
+If current HEAD is tagged then tag will be used as version.
+Else command will lookup for previous tag bump it's minor version, reset patch version and append '-SNAPSHOT'
+When there are no tags found version will be '0.1.0-SNAPSHOT'</p>
+<pre><code>goops version [flags]
+</code></pre>
+
+<h3 id="options">Options</h3>
+<pre><code>  -f, --file string   Output file (default &quot;gitlab.env&quot;)
+  -h, --help          help for version
+  -r, --release       Print release version (without -SNAPSHOT)
+  -s, --save          Save to file (gitlab.env by default). Override by --file flag
+</code></pre>
+
+<h3 id="options-inherited-from-parent-commands">Options inherited from parent commands</h3>
+<pre><code>      --config string   config file (default is $HOME/.goops.yaml)
+      --debug           Debug output
+      --no-color        Disable ANSI color output
+      --trace           Trace output
+</code></pre>
+
+<h3 id="see-also">SEE ALSO</h3>
+<ul>
+<li><a href="../goops/">goops</a>  - DevOps toolset written in Go.</li>
+</ul>
+<h6 id="auto-generated-by-spf13cobra-on-7-apr-2019">Auto generated by spf13/cobra on 7-Apr-2019</h6>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../../examples/" class="btn btn-neutral" title="Examples"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../../examples/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+    </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+
+</body>
+</html>

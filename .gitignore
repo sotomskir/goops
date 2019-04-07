@@ -1,5 +1,10 @@
 .idea/
 **.iml
-/gitlab-cli
+/goops
 /bin/
 /gitlab.env
+.dev.goops.yaml
+.goops.env
+/.scannerwork/
+/coverage.txt
+/a.json

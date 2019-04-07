@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"github.com/sotomskir/gitlab-cli/utils"
+	"github.com/sotomskir/goops/utils"
 	"github.com/spf13/viper"
 	"gopkg.in/resty.v1"
 	"regexp"
@@ -26,17 +26,17 @@ import (
 )
 
 type MergeRequest struct {
-	Id int `json:"id,omitempty"`
-	Iid int `json:"iid,omitempty"`
-	ProjectId int `json:"project_id,omitempty"`
-	Title string `json:"title,omitempty"`
+	Id          int    `json:"id,omitempty"`
+	Iid         int    `json:"iid,omitempty"`
+	ProjectId   int    `json:"project_id,omitempty"`
+	Title       string `json:"title,omitempty"`
 	Description string `json:"description,omitempty"`
-	State string `json:"state,omitempty"`
+	State       string `json:"state,omitempty"`
 }
 
 type Project struct {
-	Id  string `json:"id"`
-	Key string `json:"key"`
+	Id   string `json:"id"`
+	Key  string `json:"key"`
 	Name string `json:"name"`
 }
 
@@ -48,7 +48,7 @@ func Initialize() {
 	resty.SetHeader("Accept", "application/json")
 	resty.SetHeaders(map[string]string{
 		"Content-Type":  "application/json",
-		"User-Agent":    "gitlab-cli",
+		"User-Agent":    "goops",
 		"Private-Token": viper.GetString("ci_gitlab_token"),
 	})
 }

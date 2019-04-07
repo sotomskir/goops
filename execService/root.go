@@ -48,6 +48,7 @@ func (s Service) LogExec(command string) {
 	args := strings.Split(command, " ")
 	name := args[0]
 	arg := args[1:]
+	fmt.Println(command)
 	cmd := exec.Command(name, arg...)
 	cmdOutReader, err := cmd.StdoutPipe()
 	if err != nil {
