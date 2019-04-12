@@ -182,7 +182,7 @@ func TestGetSemanticVersion(t *testing.T) {
 	for _, table := range tables {
 		mockIService := mock_execService.NewMockIService(ctrl)
 		mockIService.EXPECT().Exec("git --no-pager tag --contains").Return(table.tag, table.error).AnyTimes()
-		mockIService.EXPECT().Exec("git describe --abbrev=0 --tags").Return(table.previousTag, table.previousError).AnyTimes()
+		mockIService.EXPECT().Exec("git describe --abbrev=0 --tags --exclude nightly").Return(table.previousTag, table.previousError).AnyTimes()
 		mockIService.EXPECT().Exec("git rev-parse --abbrev-ref HEAD").Return(table.branch, nil).AnyTimes()
 		mockIService.EXPECT().Exec(fmt.Sprintf("git --no-pager branch --remotes --list '*%s'", table.stableBranch)).Return(table.stableBranchReturn, nil).AnyTimes()
 		gitService.Initialize(mockIService)

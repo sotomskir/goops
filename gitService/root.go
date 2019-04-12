@@ -32,14 +32,14 @@ func Initialize(execServ execService.IService) {
 
 func GetHeadTag() string {
 	out, err := service.Exec("git --no-pager tag --contains")
-	if err != nil {
+	if err != nil || strings.Trim(out, " \n\t") == "nightly" {
 		return ""
 	}
 	return strings.Trim(out, " \n\t")
 }
 
 func GetPreviousTag() string {
-	out, err := service.Exec("git describe --abbrev=0 --tags")
+	out, err := service.Exec("git describe --abbrev=0 --tags --exclude nightly")
 	if err != nil {
 		return ""
 	}

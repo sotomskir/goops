@@ -36,6 +36,7 @@ func TestGetHeadTag(t *testing.T) {
 		{"1.0.0", nil, "1.0.0"},
 		{"", nil, ""},
 		{"1", errors.New("some error"), ""},
+		{"nightly", nil, ""},
 	}
 
 	for _, table := range tables {
@@ -63,7 +64,7 @@ func TestGetPreviousTag(t *testing.T) {
 
 	for _, table := range tables {
 		mockIService := mock_execService.NewMockIService(ctrl)
-		mockIService.EXPECT().Exec("git describe --abbrev=0 --tags").Return(table.tag, table.error)
+		mockIService.EXPECT().Exec("git describe --abbrev=0 --tags --exclude nightly").Return(table.tag, table.error)
 		Initialize(mockIService)
 		actual := GetPreviousTag()
 		if actual != table.expected {
