@@ -1,27 +1,19 @@
-## goops completion
+## goops nightly
 
-Generates bash completion script
+Create Github nightly tag.
 
 ### Synopsis
 
-To load completion run
-
-. <(goops completion)
-
-To configure your bash shell to load completions for each session add to your bashrc
-
-# ~/.bashrc or ~/.profile
-. <(goops completion)
-
+Create Github nightly tag.
 
 ```
-goops completion [flags]
+goops nightly [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for completion
+  -h, --help   help for nightly
 ```
 
 ### Options inherited from parent commands

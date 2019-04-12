@@ -28,7 +28,7 @@ var (
 var versionCmd = &cobra.Command{
 	Use:     "version",
 	Aliases: []string{"v"},
-	Hidden:  true,
+	Hidden:  false,
 	Short:   "Generate semantic version for current HEAD",
 	Long: `Generate semantic version for current HEAD.
 Version generation is based on git tags.

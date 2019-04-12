@@ -21,8 +21,7 @@ To initialize goops variables setenv command should be run on the beginning of p
 ```console
 $ . <(goops setenv)
 ```
-This command will set goops environment variables. Full list of goops variables
-is described in [Variables chapter](variables.md).
+This command will set goops environment variables.
 
 !!! note
     goops variables should be persisted between pipeline stages.

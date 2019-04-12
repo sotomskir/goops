@@ -100,7 +100,7 @@
                 </li>
                 <li class="">
                     
-    <a class="" href="../features/nightly-releases/">Nightly releases</a>
+    <a class="" href="../features/nightly-tags/">Github nightly tags</a>
                 </li>
     </ul>
 	    </li>
@@ -116,19 +116,11 @@
     <ul class="subnav">
                 <li class="">
                     
-    <a class="" href="../commands/goops_init.md">init</a>
+    <a class="" href="../commands/goops_setenv/">setenv</a>
                 </li>
                 <li class="">
                     
-    <a class="" href="../commands/goops_setenv.md">setenv</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="../commands/goops_transition.md">transition</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="../commands/goops_tag.md">tag</a>
+    <a class="" href="../commands/goops_transition/">transition</a>
                 </li>
     </ul>
 	    </li>
@@ -193,8 +185,7 @@ To initialize goops variables setenv command should be run on the beginning of p
 <pre><code class="console">$ . &lt;(goops setenv)
 </code></pre>
 
-<p>This command will set goops environment variables. Full list of goops variables
-is described in <a href="variables.md">Variables chapter</a>.</p>
+<p>This command will set goops environment variables.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>goops variables should be persisted between pipeline stages.
@@ -230,13 +221,6 @@ of examples how to achieve this in various CI tools.</p>
 <p>Environment variables should be uppercase e.g. GOOPS_CI_TYPE=jenkins while 
 configuration file variables should be lowercase e.g. goops_ci_type: jenkins</p>
 </div>
-<p>goops has handy init command to create sample configuration file <code>.goops.yml</code>.
-Command should be run from project directory.</p>
-<pre><code class="console">$ goops init
-</code></pre>
-
-<p>Next step is to adjust configuration to your needs and commit file to repository. 
-Full specification of the configuration file is described in <a href="configuration.md">configuration variables</a> chapter.</p>
 <h2 id="gitlab-environment-variables">Gitlab environment variables</h2>
 <p>Environment variables in Gitlab can be configured on group or project level settings &gt; CI/CD
 <img alt="Gitlab variables" src="../img/gitlab_env_variables.png?raw=true" title="Gitlab variables" /></p>

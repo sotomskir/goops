@@ -7,5 +7,10 @@
 
 DevOps toolset written in Go.
 
+## Installation
+```commandline
+sudo curl -L "https://github.com/sotomskir/goops/releases/download/nightly/goops-$(uname -s)-$(uname -m)" -o /usr/local/bin/goops && sudo chmod +x /usr/local/bin/goops
+```
+
 ## Documentation
 https://sotomskir.github.io/goops

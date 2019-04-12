@@ -10,10 +10,8 @@ nav:
   - Github nightly tags: features/nightly-tags.md
 - Examples: examples.md
 - Commands:
-  - init: commands/goops_init.md
   - setenv: commands/goops_setenv.md
   - transition: commands/goops_transition.md
-  - tag: commands/goops_tag.md
 - Plumbing commands:
   - version: commands/goops_version.md
 markdown_extensions:
