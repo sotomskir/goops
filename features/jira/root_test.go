@@ -25,7 +25,8 @@ func TestGetIssues(t *testing.T) {
 		mockIService.EXPECT().Exec("git --no-pager log -1 --pretty=%B").Return(table.msg, nil).AnyTimes()
 		gitService.Initialize(mockIService)
 		viper.Set("GOOPSC_JIRA", "true")
-		actual := GetIssues()
+		j := New()
+		actual := j.GetIssues()
 		if strings.Join(actual, " ") != table.issues {
 			t.Errorf("got: '%s', want: '%s'", strings.Join(actual, " "), table.issues)
 		}

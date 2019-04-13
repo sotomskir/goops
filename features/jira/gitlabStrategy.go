@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-type GitlabStrategy struct{}
+type gitlabStrategy struct{}
 
-func (GitlabStrategy) GetIssues() []string {
+func (gitlabStrategy) getIssues() []string {
 	mergeRequestIid := getMergeRequestIid()
 	mergeRequestIid = "3"
 	projectId := viper.GetString("CI_PROJECT_ID")

@@ -5,9 +5,9 @@ import (
 	"regexp"
 )
 
-type GerritStrategy struct{}
+type gerritStrategy struct{}
 
-func (GerritStrategy) GetIssues() []string {
+func (gerritStrategy) getIssues() []string {
 	msg := gitService.GetCommitMsg()
 	regex := regexp.MustCompile("(\\w+-\\d+)")
 	return regex.FindAllString(msg, 99)

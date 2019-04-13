@@ -36,6 +36,14 @@ func SaveExportString(variableName string, value string) {
 	saveExport(fmt.Sprintf("export %s=%s", variableName, value))
 }
 
+func IsEnabled(variable string) bool {
+	return viper.GetString(variable) == "true"
+}
+
+func IsDisabled(variable string) bool {
+	return viper.GetString(variable) != "true"
+}
+
 func saveExport(s string) {
 	f, err := os.OpenFile(".goops.env", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {

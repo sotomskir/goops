@@ -3,7 +3,9 @@
 Auto semantic version based on selected strategy.
 Available strategies:
 
+* github-flow
 * gitlab-flow
+* git-flow-branch
 
 ## Output variables
 ```console
@@ -18,7 +20,7 @@ GOOPS_SEMVER_PATCH=3
 
 ```console
 GOOPSC_SEMVER=false
-GOOPSC_SEMVER_STRATEGY=gitlab-flow
+GOOPSC_SEMVER_STRATEGY=github-flow
 ```
 
 ## gitlab-flow strategy

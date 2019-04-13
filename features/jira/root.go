@@ -9,22 +9,81 @@ import (
 	"strings"
 )
 
-var strategy Strategy
+const (
+	// Configuration variables
+	GoopscJira                      = "GOOPSC_JIRA"
+	GoopscJiraProjectKey            = "GOOPSC_JIRA_PROJECT_KEY"
+	GoopscJiraServerUrl             = "GOOPSC_JIRA_SERVER_URL"
+	GoopscJiraUser                  = "GOOPSC_JIRA_USER"
+	GoopscJiraPassword              = "GOOPSC_JIRA_PASSWORD"
+	GoopscJiraVersionAssign         = "GOOPSC_JIRA_VERSION_ASSIGN"
+	GoopscJiraVersionCreate         = "GOOPSC_JIRA_VERSION_CREATE"
+	GoopscJiraCreateDeploymentIssue = "GOOPSC_JIRA_CREATE_DEPLOYMENT_ISSUE"
+	GoopscJiraIssueTransition       = "GOOPSC_JIRA_ISSUE_TRANSITION"
+	GoopscJiraWorkflow              = "GOOPSC_JIRA_WORKFLOW"
+	GoopscJiraWorkflowContent       = "GOOPSC_JIRA_WORKFLOW_CONTENT"
+	GoopscJiraStrategy              = "GOOPSC_JIRA_STRATEGY"
 
-type Strategy interface {
-	GetIssues() []string
+	// Output variables
+	GoopsJiraIssues = "GOOPS_JIRA_ISSUES"
+
+	// Configuration options
+	GerritStrategy = "gerrit"
+	GitlabStrategy = "gitlab"
+)
+
+func setDefaults() {
+	viper.SetDefault(GoopscJira, "false")
+	viper.SetDefault(GoopscJiraStrategy, GerritStrategy)
+}
+
+type strategy interface {
+	getIssues() []string
 }
 
 type Jira struct {
-	Strategy Strategy
+	strategy strategy
 }
 
-func (o *Jira) GetVersion() []string {
-	return o.Strategy.GetIssues()
+func New() Jira {
+	setDefaults()
+	var strategy strategy
+	switch viper.GetString(GoopscJiraStrategy) {
+	case GerritStrategy:
+		strategy = gerritStrategy{}
+		break
+	case GitlabStrategy:
+		strategy = gitlabStrategy{}
+		break
+	default:
+		panic(fmt.Sprintf("unsupported strategy: %s\n", viper.GetString(GoopscJiraStrategy)))
+	}
+	return Jira{strategy: strategy}
 }
 
-func SetJiraVersion(version string, issues []string, summary string, description string, issueType string) {
-	if isDisabled() || viper.GetString("GOOPSC_JIRA_VERSION_ASSIGN") == "false" {
+func (o *Jira) GetIssues() []string {
+	if utils.IsDisabled(GoopscJira) {
+		return nil
+	}
+	issues := o.strategy.getIssues()
+	issueKeysJoined := strings.Join(issues, " ")
+	utils.SaveExportString(GoopsJiraIssues, issueKeysJoined)
+	return issues
+}
+
+func (o *Jira) JiraTransition(issues string, state string) {
+	if utils.IsDisabled(GoopscJira) || utils.IsDisabled(GoopscJiraIssueTransition) {
+		return
+	}
+	jiraInitApi()
+	for _, issue := range strings.Split(issues, " ") {
+		logrus.Infof("Transition issue: %s to state: %s\n", issue, state)
+		jiraApi.TransitionIssue("", issue, state, "")
+	}
+}
+
+func (o *Jira) SetJiraVersion(version string, issues []string, summary string, description string, issueType string) {
+	if utils.IsDisabled(GoopscJira) || utils.IsDisabled(GoopscJiraVersionAssign) {
 		return
 	}
 	jiraInitApi()
@@ -33,8 +92,8 @@ func SetJiraVersion(version string, issues []string, summary string, description
 		err := jiraApi.AssignVersion(
 			issue,
 			version,
-			viper.GetString("GOOPSC_JIRA_VERSION_CREATE") != "false",
-			viper.GetString("GOOPSC_JIRA_CREATE_DEPLOYMENT_ISSUE") != "false",
+			utils.IsEnabled(GoopscJiraVersionCreate),
+			utils.IsEnabled(GoopscJiraCreateDeploymentIssue),
 			summary,
 			description,
 			issueType)
@@ -44,51 +103,7 @@ func SetJiraVersion(version string, issues []string, summary string, description
 	}
 }
 
-func jiraInit() {
-	if isDisabled() {
-		return
-	}
-	viper.SetDefault("GOOPSC_JIRA_STRATEGY", "gerrit")
-	switch viper.GetString("GOOPSC_JIRA_STRATEGY") {
-	case "gerrit":
-		strategy = GerritStrategy{}
-		break
-	case "gitlab":
-		strategy = GitlabStrategy{}
-		break
-	default:
-		panic(fmt.Sprintf("unsupported strategy: %s\n", viper.GetString("GOOPSC_JIRA_STRATEGY")))
-	}
-}
-
 func jiraInitApi() {
-	utils.ViperValidateEnv("GOOPSC_JIRA_SERVER_URL", "GOOPSC_JIRA_USER", "GOOPSC_JIRA_PASSWORD")
-	jiraApi.Initialize(viper.GetString("GOOPSC_JIRA_SERVER_URL"), viper.GetString("GOOPSC_JIRA_USER"), viper.GetString("GOOPSC_JIRA_PASSWORD"))
-}
-
-func isDisabled() bool {
-	viper.SetDefault("GOOPSC_JIRA", "false")
-	return viper.GetString("GOOPSC_JIRA") == "false"
-}
-
-func GetIssues() []string {
-	if isDisabled() {
-		return nil
-	}
-	jiraInit()
-	issues := strategy.GetIssues()
-	issueKeysJoined := strings.Join(issues, " ")
-	utils.SaveExportString("GOOPS_ISSUES", issueKeysJoined)
-	return issues
-}
-
-func JiraTransition(issues string, state string) {
-	if isDisabled() || viper.GetString("GOOPSC_JIRA_ISSUE_TRANSITION") == "false" {
-		return
-	}
-	jiraInitApi()
-	for _, issue := range strings.Split(issues, " ") {
-		logrus.Infof("Transition issue: %s to state: %s\n", issue, state)
-		jiraApi.TransitionIssue("", issue, state, "")
-	}
+	utils.ViperValidateEnv(GoopscJiraServerUrl, GoopscJiraUser, GoopscJiraPassword)
+	jiraApi.Initialize(viper.GetString(GoopscJiraServerUrl), viper.GetString(GoopscJiraUser), viper.GetString(GoopscJiraPassword))
 }

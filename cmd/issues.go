@@ -28,7 +28,8 @@ var issueCmd = &cobra.Command{
 	Aliases: []string{"i"},
 	Hidden:  true,
 	Run: func(cmd *cobra.Command, args []string) {
-		jira.GetIssues()
+		j := jira.New()
+		j.GetIssues()
 	},
 }
 

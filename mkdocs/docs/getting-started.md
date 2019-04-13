@@ -7,7 +7,7 @@ If you wish to install stable version please replace `nightly` with specific ver
 [releases page](https://github.com/sotomskir/goops/releases).
 
 ```console
-$ VERSION=nightly sudo curl -L "https://github.com/sotomskir/goops/releases/download/$VERSION/goops-$(uname -s)-$(uname -m)" -o /usr/local/bin/goops
+$ sudo curl -L "https://github.com/sotomskir/goops/releases/download/nightly/goops-$(uname -s)-$(uname -m)" -o /usr/local/bin/goops && chmod +x /usr/local/bin/goops 
 ```
 
 **Windows**

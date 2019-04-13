@@ -5,9 +5,9 @@ import (
 	"github.com/sotomskir/goops/gitService"
 )
 
-type GitFlowBranch struct{}
+type gitFlowBranch struct{}
 
-func (GitFlowBranch) GetSemanticVersion() string {
+func (gitFlowBranch) getSemanticVersion() string {
 	previousMergedVersion, err := gitService.GetPreviouslyMergedVersion()
 	if err != nil {
 		panic(err)

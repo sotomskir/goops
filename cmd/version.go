@@ -36,7 +36,8 @@ If current HEAD is tagged then tag will be used as version.
 Else command will lookup for previous tag bump it's minor version, reset patch version and append '-SNAPSHOT'
 When there are no tags found version will be '0.1.0-SNAPSHOT'`,
 	Run: func(cmd *cobra.Command, args []string) {
-		semver.GetSemanticVersion()
+		s := semver.New()
+		s.GetVersion()
 	},
 }
 

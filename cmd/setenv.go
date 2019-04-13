@@ -40,9 +40,11 @@ If build is not in merge context CI_ISSUES will be fetched from previous merged 
 All CI_ISSUES will be assigned to CI_SEMVER_RELEASE version in Jira. 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		version := semver.GetSemanticVersion()
-		issues := jira.GetIssues()
-		jira.SetJiraVersion(version, issues, summary, description, issueType)
+		s := semver.New()
+		j := jira.New()
+		version := s.GetVersion()
+		issues := j.GetIssues()
+		j.SetJiraVersion(version, issues, summary, description, issueType)
 	},
 }
 

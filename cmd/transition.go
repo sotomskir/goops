@@ -28,7 +28,8 @@ var transitionCmd = &cobra.Command{
 	Short:   "Transition all issues to desired state",
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		jira.JiraTransition(viper.GetString("GOOPS_ISSUES"), args[0])
+		j := jira.New()
+		j.JiraTransition(viper.GetString("GOOPS_ISSUES"), args[0])
 	},
 }
 

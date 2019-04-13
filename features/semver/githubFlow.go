@@ -5,9 +5,9 @@ import (
 	"github.com/sotomskir/goops/gitService"
 )
 
-type GithubFlow struct{}
+type githubFlow struct{}
 
-func (GithubFlow) GetSemanticVersion() string {
+func (githubFlow) getSemanticVersion() string {
 	headTag := gitService.GetHeadTag()
 	if headTag != "" {
 		return headTag

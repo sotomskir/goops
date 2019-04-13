@@ -12,44 +12,69 @@ import (
 	"strings"
 )
 
-type Strategy interface {
-	GetSemanticVersion() string
+const (
+	// Configuration variables
+	GoopscSemver           = "GOOPSC_SEMVER"
+	GoopscSemverStrategy   = "GOOPSC_SEMVER_STRATEGY"
+	GoopscSemverSaveExport = "GOOPSC_SAVE_EXPORT"
+
+	// Output variables
+	GoopsSemver           = "GOOPS_SEMVER"
+	GoopsSemverRelease    = "GOOPS_SEMVER_RELEASE"
+	GoopsSemverMajor      = "GOOPS_SEMVER_MAJOR"
+	GoopsSemverMinor      = "GOOPS_SEMVER_MINOR"
+	GoopsSemverPatch      = "GOOPS_SEMVER_PATCH"
+
+	// Configuration options
+	GithubFlowStrategy    = "github-flow"
+	GitlabFlowStrategy    = "gitlab-flow"
+	GitFlowBranchStrategy = "git-flow-branch"
+)
+
+func setDefaults() {
+	viper.SetDefault(GoopscSemver, "false")
+	viper.SetDefault(GoopscSemverSaveExport, "true")
+	viper.SetDefault(GoopscSemverStrategy, GithubFlowStrategy)
+}
+
+type strategy interface {
+	getSemanticVersion() string
 }
 
 type Semver struct {
-	Strategy Strategy
+	strategy strategy
+}
+
+func New() Semver {
+	setDefaults()
+	var strategy strategy
+	switch viper.GetString(GoopscSemverStrategy) {
+	case GithubFlowStrategy:
+		strategy = githubFlow{}
+	case GitlabFlowStrategy:
+		strategy = gitlabFlow{}
+	case GitFlowBranchStrategy:
+		strategy = gitFlowBranch{}
+	default:
+		logrus.Errorf("Unexpected strategy: %s\n", viper.GetString(GoopscSemverStrategy))
+		os.Exit(1)
+	}
+	return Semver{strategy: strategy}
 }
 
 func (o *Semver) GetVersion() string {
-	return o.Strategy.GetSemanticVersion()
-}
-
-func GetSemanticVersion() string {
-	if viper.GetString("GOOPSC_SEMVER") == "false" {
+	if utils.IsDisabled(GoopscSemver) {
 		return ""
 	}
-	var strategy Strategy
-	switch viper.GetString("GOOPSC_SEMVER_STRATEGY") {
-	case "github-flow":
-		strategy = GithubFlow{}
-	case "gitlab-flow":
-		strategy = GitlabFlow{}
-	case "git-flow-branch":
-		strategy = GitFlowBranch{}
-	case "":
-		strategy = GitlabFlow{}
-	default:
-		logrus.Errorf("Unexpected strategy: %s\n", viper.GetString("GOOPSC_SEMVER_STRATEGY"))
-		os.Exit(1)
-	}
-	s := Semver{Strategy: strategy}
-	version := s.GetVersion()
-	utils.SaveExportString("GOOPS_SEMVER", version)
-	utils.SaveExportString("GOOPS_SEMVER_RELEASE", strings.Replace(version, "-SNAPSHOT", "", 1))
+	version := o.strategy.getSemanticVersion()
 	major, minor, patch, _ := splitSemver(version)
-	utils.SaveExportInt("GOOPS_SEMVER_MAJOR", major)
-	utils.SaveExportInt("GOOPS_SEMVER_MINOR", minor)
-	utils.SaveExportInt("GOOPS_SEMVER_PATCH", patch)
+	if utils.IsEnabled(GoopscSemverSaveExport) {
+		utils.SaveExportString(GoopsSemver, version)
+		utils.SaveExportString(GoopsSemverRelease, strings.Replace(version, "-SNAPSHOT", "", 1))
+		utils.SaveExportInt(GoopsSemverMajor, major)
+		utils.SaveExportInt(GoopsSemverMinor, minor)
+		utils.SaveExportInt(GoopsSemverPatch, patch)
+	}
 	return version
 }
 
@@ -74,7 +99,7 @@ func splitSemver(version string) (int, int, int, string) {
 	}
 	minor, err := strconv.Atoi(splited[1])
 	if err != nil {
-		logrus.Fatalf("Error converting patch version: %s to int\n", splited[1])
+		logrus.Fatalf("Error converting minor version: %s to int\n", splited[1])
 	}
 	splitedPatch := strings.Split(splited[2], "-")
 	patch, err := strconv.Atoi(splitedPatch[0])
@@ -98,27 +123,26 @@ func getVersionForStableBranch(previousTag string) string {
 func getVersionFromBranchName(branch string) string {
 	if isStableBranch(branch) {
 		regex := regexp.MustCompile("^(.*)-stable")
-		match := regex.FindStringSubmatch(branch)
-		if len(match) < 2 {
-			logrus.Fatalf("Version not found in branch name: %s\n", branch)
-		}
+		match := findMatch(regex, branch)
 		return fmt.Sprintf("%s.0", match[1])
 	}
 	regex := regexp.MustCompile("(\\d+\\.\\d+\\.\\d+)")
+	match := findMatch(regex, branch)
+	return match[1]
+}
+
+func findMatch(regex *regexp.Regexp, branch string) []string {
 	match := regex.FindStringSubmatch(branch)
 	if len(match) < 2 {
 		logrus.Fatalf("Version not found in branch name: %s\n", branch)
 	}
-	return match[1]
+	return match
 }
 
 func versionMatchBranchName(version string, branch string) bool {
 	regex := regexp.MustCompile("(\\d+\\.\\d+)")
-	match := regex.FindStringSubmatch(branch)
-	match2 := regex.FindStringSubmatch(version)
-	if len(match) < 2 || len(match2) < 2 {
-		logrus.Fatalf("Version not found in branch name: %s\n", branch)
-	}
+	match := findMatch(regex, branch)
+	match2 := findMatch(regex, version)
 	return match[1] == match2[1]
 }
 

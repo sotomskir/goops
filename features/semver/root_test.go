@@ -179,6 +179,10 @@ func TestGetSemanticVersion(t *testing.T) {
 		{"0.2-stable", "", "0.1.0", nil, nil, "0.2-stable", "remotes/origin/0.2-stable", "0.2.0-SNAPSHOT"},
 	}
 
+	viper.Set(GoopscSemverSaveExport, "false")
+	viper.Set(GoopscSemver, "true")
+	viper.Set(GoopscSemverStrategy, GitlabFlowStrategy)
+	s := New()
 	for _, table := range tables {
 		mockIService := mock_execService.NewMockIService(ctrl)
 		mockIService.EXPECT().Exec("git --no-pager tag --contains").Return(table.tag, table.error).AnyTimes()
@@ -186,7 +190,7 @@ func TestGetSemanticVersion(t *testing.T) {
 		mockIService.EXPECT().Exec("git rev-parse --abbrev-ref HEAD").Return(table.branch, nil).AnyTimes()
 		mockIService.EXPECT().Exec(fmt.Sprintf("git --no-pager branch --remotes --list '*%s'", table.stableBranch)).Return(table.stableBranchReturn, nil).AnyTimes()
 		gitService.Initialize(mockIService)
-		actual := GetSemanticVersion()
+		actual := s.GetVersion()
 		if actual != table.expected {
 			t.Errorf("Version is invalid, got: '%s', want: '%s'\n%v.", actual, table.expected, table)
 		}
