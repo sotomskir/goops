@@ -1,4 +1,5 @@
 # goops
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sotomskir_goops&metric=alert_status)](https://sonarcloud.io/dashboard?id=sotomskir_goops)
 [![Build Status](https://travis-ci.org/sotomskir/goops.svg?branch=master)](https://travis-ci.org/sotomskir/goops)
 [![codecov](https://codecov.io/gh/sotomskir/goops/branch/master/graph/badge.svg)](https://codecov.io/gh/sotomskir/goops)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sotomskir/goops)](https://goreportcard.com/report/github.com/sotomskir/goops)
